@@ -21,7 +21,10 @@ $judul = 'Dashboard';
 require __DIR__ . '/partials/header.php';
 ?>
 
-<div class="hero p-4 p-md-5 mb-4">
+<div class="hero p-4 p-md-5 mb-4" style="<?= e(gayaLatar()) ?>">
+    <?php if (GAMBAR_LATAR === ''): ?>
+        <i class="bi bi-pencil-square dekor"></i>
+    <?php endif; ?>
     <h2 class="fw-bold">Halo, <?= e($namaUser) ?>! 👋</h2>
     <p class="mb-3"><?= e(date('d/m/Y')) ?> · Siap melayani pelanggan hari ini?</p>
     <a href="kasir.php" class="btn btn-light btn-lg">

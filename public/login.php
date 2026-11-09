@@ -42,19 +42,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         .panel-gambar {
-            background:
-                linear-gradient(160deg, rgba(13, 110, 253, .85), rgba(8, 40, 120, .9)),
-                url('img/toko-atk.jpg') center / cover,
-                #0d6efd;
+            position: relative;
+            overflow: hidden;
             color: #fff;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, .4);
+            background:
+                linear-gradient(160deg, rgba(13, 110, 253, .45), rgba(8, 40, 120, .55)),
+                var(--gambar, linear-gradient(#0d6efd, #0d6efd)) center / cover,
+                #0d6efd;
+        }
+        .panel-gambar .isi { position: relative; z-index: 1; }
+        .panel-gambar .dekor {
+            position: absolute;
+            z-index: 0;
+            opacity: .12;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row min-vh-100">
-        <div class="col-md-7 d-none d-md-flex panel-gambar align-items-center justify-content-center">
-            <div class="text-center px-5">
+        <div class="col-md-7 d-none d-md-flex panel-gambar align-items-center justify-content-center"
+             style="<?= e(gayaLatar()) ?>">
+            <?php if (GAMBAR_LATAR === ''): ?>
+                <i class="bi bi-journal-text dekor" style="font-size: 12rem; left: 4%; top: 8%; transform: rotate(-10deg);"></i>
+                <i class="bi bi-pencil dekor" style="font-size: 10rem; right: 6%; top: 12%; transform: rotate(15deg);"></i>
+                <i class="bi bi-paperclip dekor" style="font-size: 9rem; left: 12%; bottom: 6%; transform: rotate(25deg);"></i>
+                <i class="bi bi-scissors dekor" style="font-size: 9rem; right: 10%; bottom: 8%; transform: rotate(-20deg);"></i>
+            <?php endif; ?>
+
+            <div class="isi text-center px-5">
                 <i class="bi bi-pencil-square" style="font-size: 5rem;"></i>
                 <h1 class="fw-bold mt-3">POS Toko ATK</h1>
                 <p class="lead">Kasir cepat, stok terkontrol, laporan rapi.</p>
@@ -68,6 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="col-md-5 d-flex align-items-center justify-content-center bg-light">
             <div class="w-100 p-4" style="max-width: 380px;">
+                <div class="text-center d-md-none mb-3 text-primary">
+                    <i class="bi bi-pencil-square" style="font-size: 3rem;"></i>
+                    <h4 class="fw-bold">POS Toko ATK</h4>
+                </div>
+
                 <h3 class="fw-bold mb-1">Selamat datang 👋</h3>
                 <p class="text-muted mb-4">Masuk untuk membuka kasir.</p>
 

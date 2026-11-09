@@ -22,12 +22,26 @@ $menu = [
         body { background: #f4f6fb; }
         .card { border: 0; box-shadow: 0 2px 10px rgba(0, 0, 0, .06); border-radius: .75rem; }
         .hero {
-            background:
-                linear-gradient(120deg, rgba(13, 110, 253, .88), rgba(8, 50, 140, .85)),
-                url('img/toko-atk.jpg') center / cover,
-                #0d6efd;
+            position: relative;
+            overflow: hidden;
             color: #fff;
             border-radius: 1rem;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, .35);
+            background:
+                linear-gradient(120deg, rgba(13, 110, 253, .5), rgba(8, 50, 140, .55)),
+                var(--gambar, linear-gradient(#0d6efd, #0d6efd)) center / cover,
+                #0d6efd;
+        }
+        .hero > * { position: relative; z-index: 1; }
+        .hero .dekor {
+            position: absolute;
+            z-index: 0;
+            right: 1.5rem;
+            bottom: -1rem;
+            font-size: 9rem;
+            opacity: .15;
+            transform: rotate(-12deg);
+            pointer-events: none;
         }
         .stat-icon {
             width: 52px; height: 52px; border-radius: 12px;

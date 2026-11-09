@@ -7,6 +7,13 @@ use App\Database;
 
 require __DIR__ . '/vendor/autoload.php';
 
+/**
+ * Gambar latar untuk login dan dashboard.
+ * Bisa file lokal ('img/latar.svg') atau URL online foto.
+ * Kosongkan ('') untuk memakai gradasi + ikon saja.
+ */
+const GAMBAR_LATAR = 'img/latar.svg';
+
 date_default_timezone_set('Asia/Jakarta');
 
 if (PHP_SAPI !== 'cli') {
@@ -43,4 +50,17 @@ function wajibLogin(Auth $auth): void
         header('Location: login.php');
         exit;
     }
+}
+
+/**
+ * Membuat isi atribut style untuk gambar latar.
+ * Hasilnya kosong jika GAMBAR_LATAR belum diisi.
+ */
+function gayaLatar(): string
+{
+    if (GAMBAR_LATAR === '') {
+        return '';
+    }
+
+    return "--gambar: url('" . str_replace("'", '%27', GAMBAR_LATAR) . "')";
 }
