@@ -1,11 +1,11 @@
 <?php
 
 require __DIR__ . '/../bootstrap.php';
-
 use App\KalkulatorTransaksi;
 use App\Keranjang;
 use App\Produk;
 use App\Transaksi;
+wajibLogin($auth);
 
 $_SESSION['keranjang'] ??= [];
 

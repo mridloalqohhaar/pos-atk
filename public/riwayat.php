@@ -1,9 +1,9 @@
 <?php
 
 require __DIR__ . '/../bootstrap.php';
-
 use App\KalkulatorTransaksi;
 use App\Transaksi;
+wajibLogin($auth);
 
 $transaksi = new Transaksi($db, new KalkulatorTransaksi());
 $daftar = $transaksi->semua();

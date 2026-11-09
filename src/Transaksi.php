@@ -156,4 +156,51 @@ class Transaksi
 
         return $stmt->fetchAll();
     }
+        /**
+     * Merangkum transaksi hari ini: jumlah transaksi dan total omzet.
+     *
+     * @return array{jumlah: int, omzet: float}
+     */
+    public function ringkasanHariIni(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) AS jumlah, COALESCE(SUM(total), 0) AS omzet
+             FROM transaksi WHERE DATE(tanggal) = :hari'
+        );
+        $stmt->execute(['hari' => date('Y-m-d')]);
+        $baris = $stmt->fetch();
+
+        return ['jumlah' => (int) $baris['jumlah'], 'omzet' => (float) $baris['omzet']];
+    }
+
+    /**
+     * Mengambil transaksi terbaru.
+     *
+     * @param int $jumlah Banyaknya transaksi yang diambil
+     * @return array<int, array<string, mixed>>
+     */
+    public function terbaru(int $jumlah = 5): array
+    {
+        return $this->pdo
+            ->query('SELECT * FROM transaksi ORDER BY id_transaksi DESC LIMIT ' . (int) $jumlah)
+            ->fetchAll();
+    }
+
+    /**
+     * Mengambil produk terlaris berdasarkan total qty terjual.
+     *
+     * @param int $jumlah Banyaknya produk yang diambil
+     * @return array<int, array<string, mixed>>
+     */
+    public function terlaris(int $jumlah = 5): array
+    {
+        return $this->pdo->query(
+            'SELECT p.nama_produk, SUM(d.qty) AS terjual
+             FROM detail_transaksi d
+             JOIN produk p ON p.id_produk = d.id_produk
+             GROUP BY p.id_produk, p.nama_produk
+             ORDER BY terjual DESC
+             LIMIT ' . (int) $jumlah
+        )->fetchAll();
+    }
 }

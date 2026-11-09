@@ -123,4 +123,27 @@ class Produk
 
         return $errors;
     }
+        /**
+     * Menghitung jumlah seluruh produk.
+     */
+    public function jumlah(): int
+    {
+        return (int) $this->pdo->query('SELECT COUNT(*) FROM produk')->fetchColumn();
+    }
+
+    /**
+     * Mengambil produk yang stoknya sudah menipis.
+     *
+     * @param int $batas Produk dengan stok sama atau di bawah angka ini dianggap menipis
+     * @return array<int, array<string, mixed>>
+     */
+    public function stokMenipis(int $batas = 10): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM produk WHERE stok <= :batas ORDER BY stok ASC, nama_produk ASC'
+        );
+        $stmt->execute(['batas' => $batas]);
+
+        return $stmt->fetchAll();
+    }
 }

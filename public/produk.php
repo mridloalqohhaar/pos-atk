@@ -1,8 +1,8 @@
 <?php
 
 require __DIR__ . '/../bootstrap.php';
-
 use App\Produk;
+wajibLogin($auth);
 
 $produk = new Produk($db);
 $error = '';
