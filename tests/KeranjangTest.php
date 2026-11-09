@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests;
+
+use App\Keranjang;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+
+class KeranjangTest extends TestCase
+{
+    public function testTambahProdukBaru(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+
+        $keranjang->tambah(1, 2);
+
+        $this->assertSame([1 => 2], $keranjang->semua());
+    }
+
+    public function testTambahProdukSamaMenjumlahkanQty(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+
+        $keranjang->tambah(1, 2);
+        $keranjang->tambah(1, 3);
+
+        $this->assertSame(5, $keranjang->qty(1));
+    }
+
+    public function testQtyNolDitolak(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+
+        $this->expectException(InvalidArgumentException::class);
+        $keranjang->tambah(1, 0);
+    }
+
+    public function testHapusDanKosongkan(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 1);
+        $keranjang->tambah(2, 1);
+
+        $keranjang->hapus(1);
+        $this->assertSame([2 => 1], $keranjang->semua());
+
+        $keranjang->kosongkan();
+        $this->assertTrue($keranjang->kosong());
+    }
+
+    public function testPenyimpananLuarIkutBerubah(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+
+        $keranjang->tambah(7, 4);
+
+        $this->assertSame([7 => 4], $penyimpanan);
+    }
+}

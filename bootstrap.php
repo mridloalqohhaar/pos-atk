@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Database;
 
 require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
+
+session_start();
 
 $config = require __DIR__ . '/config/database.php';
 $db = new Database($config);
