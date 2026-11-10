@@ -21,16 +21,21 @@ class Produk
         $this->pdo = $db->getConnection();
     }
 
-    /**
-     * Mengambil semua produk, yang terbaru di atas.
+       /**
+     * Mengambil produk, yang terbaru di atas.
+     * Jika $kata diisi, hanya produk yang namanya mengandung kata itu.
      *
+     * @param string $kata Kata kunci pencarian (kosong = semua produk)
      * @return array<int, array<string, mixed>>
      */
-    public function semua(): array
+    public function semua(string $kata = ''): array
     {
-        return $this->pdo
-            ->query('SELECT * FROM produk ORDER BY id_produk DESC')
-            ->fetchAll();
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM produk WHERE nama_produk LIKE :kata ORDER BY id_produk DESC'
+        );
+        $stmt->execute(['kata' => '%' . $kata . '%']);
+
+        return $stmt->fetchAll();
     }
 
     /**

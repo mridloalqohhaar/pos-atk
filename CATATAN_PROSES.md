@@ -13,6 +13,15 @@
 - Fitur penting: login sederhana.
 - Opsional: dashboard.
 
+
+## Day 4 (nilai tambah)
+- Pencarian produk (LIKE + prepared statement).
+- Filter riwayat per tanggal + total omzet terfilter.
+- Cetak struk (struk.php) dengan CSS @media print.
+- Struk memakai harga_satuan dari detail_transaksi.
+
+
+
 ## Log bug
 | Tanggal | Bug | Penyebab | Perbaikan |
 |---|---|---|---|

@@ -113,15 +113,31 @@ class Transaksi
     }
 
     /**
-     * Mengambil semua transaksi, yang terbaru di atas.
+        /**
+     * Mengambil transaksi, yang terbaru di atas, dengan filter tanggal opsional.
      *
+     * @param string|null $dari   Tanggal awal (format Y-m-d), null = tanpa batas
+     * @param string|null $sampai Tanggal akhir (format Y-m-d), null = tanpa batas
      * @return array<int, array<string, mixed>>
      */
-    public function semua(): array
+    public function semua(?string $dari = null, ?string $sampai = null): array
     {
-        return $this->pdo
-            ->query('SELECT * FROM transaksi ORDER BY id_transaksi DESC')
-            ->fetchAll();
+        $sql = 'SELECT * FROM transaksi WHERE 1 = 1';
+        $param = [];
+
+        if ($dari !== null) {
+            $sql .= ' AND DATE(tanggal) >= :dari';
+            $param['dari'] = $dari;
+        }
+        if ($sampai !== null) {
+            $sql .= ' AND DATE(tanggal) <= :sampai';
+            $param['sampai'] = $sampai;
+        }
+
+        $stmt = $this->pdo->prepare($sql . ' ORDER BY id_transaksi DESC');
+        $stmt->execute($param);
+
+        return $stmt->fetchAll();
     }
 
     /**

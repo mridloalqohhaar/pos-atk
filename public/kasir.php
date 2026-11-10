@@ -95,6 +95,7 @@ require __DIR__ . '/partials/header.php';
         <div class="card card-body">
             <h6>Tambah ke Keranjang</h6>
             <form method="post">
+                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                 <input type="hidden" name="aksi" value="tambah">
                 <div class="mb-3">
                     <label class="form-label">Produk</label>
@@ -143,6 +144,7 @@ require __DIR__ . '/partials/header.php';
                             <td class="text-end"><?= e(rupiah($b['subtotal'])) ?></td>
                             <td class="text-end">
                                 <form method="post">
+                                    <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                                     <input type="hidden" name="aksi" value="hapus">
                                     <input type="hidden" name="id_produk" value="<?= e($b['id_produk']) ?>">
                                     <button class="btn btn-sm btn-outline-danger">x</button>
@@ -176,10 +178,12 @@ require __DIR__ . '/partials/header.php';
         <?php if (count($baris) > 0): ?>
         <div class="d-flex gap-2 mt-3">
             <form method="post">
+                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                 <input type="hidden" name="aksi" value="simpan">
                 <button class="btn btn-success">Simpan Transaksi</button>
             </form>
             <form method="post" onsubmit="return confirm('Kosongkan keranjang?')">
+                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                 <input type="hidden" name="aksi" value="kosongkan">
                 <button class="btn btn-outline-secondary">Kosongkan</button>
             </form>

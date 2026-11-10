@@ -67,6 +67,8 @@ require __DIR__ . '/partials/header.php';
 </div>
 
 <div class="mt-3">
+    <a href="struk.php?id=<?= e($trx['id_transaksi']) ?>" target="_blank"
+       class="btn btn-dark"><i class="bi bi-printer"></i> Cetak Struk</a>
     <a href="kasir.php" class="btn btn-primary">Transaksi Baru</a>
     <a href="riwayat.php" class="btn btn-secondary">Ke Riwayat</a>
 </div>

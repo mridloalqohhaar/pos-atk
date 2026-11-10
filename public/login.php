@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert-danger py-2"><?= e($error) ?></div>
                 <?php endif; ?>
 
-                <form method="post">
+                <form method="post"> <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <div class="input-group">

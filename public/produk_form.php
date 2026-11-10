@@ -45,7 +45,7 @@ require __DIR__ . '/partials/header.php';
 <h4 class="mb-3"><?= e($judul) ?></h4>
 
 <div class="card card-body">
-    <form method="post">
+    <form method="post"> <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
         <div class="mb-3">
             <label class="form-label">Nama Produk</label>
             <input type="text" name="nama_produk" value="<?= e($data['nama_produk']) ?>"
