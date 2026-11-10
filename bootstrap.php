@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth;
+use App\Csrf;
 use App\Database;
 
 require __DIR__ . '/vendor/autoload.php';
@@ -24,6 +25,13 @@ $_SESSION ??= [];
 $config = require __DIR__ . '/config/database.php';
 $db = new Database($config);
 $auth = new Auth($_SESSION);
+$csrf = new Csrf($_SESSION);
+
+// Semua permintaan POST wajib membawa token CSRF yang cocok.
+if (PHP_SAPI !== 'cli' && $_SERVER['REQUEST_METHOD'] === 'POST' && !$csrf->cek($_POST['_token'] ?? null)) {
+    http_response_code(419);
+    exit('Sesi formulir tidak valid atau sudah kedaluwarsa. Kembali, muat ulang halaman, lalu coba lagi.');
+}
 
 /**
  * Mengamankan teks sebelum ditampilkan di HTML (mencegah XSS).
