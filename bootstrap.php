@@ -61,6 +61,38 @@ function wajibLogin(Auth $auth): void
 }
 
 /**
+ * Menentukan ikon dan warna latar kartu produk berdasarkan kata kunci nama.
+ *
+ * @param string $nama Nama produk yang akan dicari kata kuncinya
+ * @return array{ikon: string, warna: string} Kelas ikon Bootstrap dan warna latar heksadesimal
+ */
+function ikonProduk(string $nama): array
+{
+    $nama = mb_strtolower($nama);
+
+    $aturan = [
+        ['kata' => ['pulpen', 'pena', 'ballpoint'], 'ikon' => 'bi-pen', 'warna' => '#e0f2fe'],
+        ['kata' => ['pensil'], 'ikon' => 'bi-pencil', 'warna' => '#fef3c7'],
+        ['kata' => ['penghapus'], 'ikon' => 'bi-eraser', 'warna' => '#fce7f3'],
+        ['kata' => ['buku'], 'ikon' => 'bi-book', 'warna' => '#ede9fe'],
+        ['kata' => ['kertas', 'hvs'], 'ikon' => 'bi-file-earmark-text', 'warna' => '#dcfce7'],
+        ['kata' => ['stapler', 'staples'], 'ikon' => 'bi-paperclip', 'warna' => '#ffedd5'],
+        ['kata' => ['lakban', 'selotip', 'isolasi'], 'ikon' => 'bi-record-circle', 'warna' => '#cffafe'],
+        ['kata' => ['map', 'folder'], 'ikon' => 'bi-folder2-open', 'warna' => '#fef9c3'],
+    ];
+
+    foreach ($aturan as $baris) {
+        foreach ($baris['kata'] as $kata) {
+            if (str_contains($nama, $kata)) {
+                return ['ikon' => $baris['ikon'], 'warna' => $baris['warna']];
+            }
+        }
+    }
+
+    return ['ikon' => 'bi-box-seam', 'warna' => '#f1f5f9'];
+}
+
+/**
  * Membuat isi atribut style untuk gambar latar.
  * Hasilnya kosong jika GAMBAR_LATAR belum diisi.
  */

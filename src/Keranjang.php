@@ -39,6 +39,33 @@ class Keranjang
     }
 
     /**
+     * Mengurangi qty satu produk di keranjang.
+     * Produk otomatis dihapus jika qty tersisa nol atau kurang.
+     *
+     * @throws InvalidArgumentException Jika qty kurang dari 1
+     */
+    public function kurangi(int $idProduk, int $qty = 1): void
+    {
+        if ($qty < 1) {
+            throw new InvalidArgumentException('Qty minimal 1.');
+        }
+
+        if (!isset($this->data[$idProduk])) {
+            return;
+        }
+
+        $sisa = $this->data[$idProduk] - $qty;
+
+        if ($sisa < 1) {
+            unset($this->data[$idProduk]);
+
+            return;
+        }
+
+        $this->data[$idProduk] = $sisa;
+    }
+
+    /**
      * Mengambil qty satu produk di keranjang (0 jika belum ada).
      */
     public function qty(int $idProduk): int

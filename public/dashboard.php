@@ -23,49 +23,49 @@ require __DIR__ . '/partials/header.php';
 
 <div class="hero p-4 p-md-5 mb-4" style="<?= e(gayaLatar()) ?>">
     <?php if (GAMBAR_LATAR === ''): ?>
-        <i class="bi bi-pencil-square dekor"></i>
+        <i class="bi bi-pencil-square dekor" aria-hidden="true"></i>
     <?php endif; ?>
-    <h2 class="fw-bold">Halo, <?= e($namaUser) ?>! 👋</h2>
-    <p class="mb-3"><?= e(date('d/m/Y')) ?> · Siap melayani pelanggan hari ini?</p>
+    <h2 class="fw-bold">Halo, <?= e($namaUser) ?>!</h2>
+    <p class="mb-3"><?= e(date('d/m/Y')) ?> &middot; Siap melayani pelanggan hari ini?</p>
     <a href="kasir.php" class="btn btn-light btn-lg">
-        <i class="bi bi-cart3"></i> Buka Kasir
+        <i class="bi bi-cart3" aria-hidden="true"></i> Buka Kasir
     </a>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="card card-body d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-receipt"></i></div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon tone-blue"><i class="bi bi-receipt" aria-hidden="true"></i></div>
             <div>
-                <div class="text-muted small">Transaksi hari ini</div>
-                <div class="fs-4 fw-bold"><?= e($hariIni['jumlah']) ?></div>
+                <div class="stat-label">Transaksi hari ini</div>
+                <div class="stat-value"><?= e($hariIni['jumlah']) ?></div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card card-body d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon tone-green"><i class="bi bi-cash-stack" aria-hidden="true"></i></div>
             <div>
-                <div class="text-muted small">Omzet hari ini</div>
-                <div class="fs-5 fw-bold"><?= e(rupiah($hariIni['omzet'])) ?></div>
+                <div class="stat-label">Omzet hari ini</div>
+                <div class="stat-value is-money"><?= e(rupiah($hariIni['omzet'])) ?></div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card card-body d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-info-subtle text-info"><i class="bi bi-box-seam"></i></div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon tone-cyan"><i class="bi bi-box-seam" aria-hidden="true"></i></div>
             <div>
-                <div class="text-muted small">Total produk</div>
-                <div class="fs-4 fw-bold"><?= e($produk->jumlah()) ?></div>
+                <div class="stat-label">Total produk</div>
+                <div class="stat-value"><?= e($produk->jumlah()) ?></div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
-        <div class="card card-body d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon tone-amber"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></div>
             <div>
-                <div class="text-muted small">Stok menipis</div>
-                <div class="fs-4 fw-bold"><?= e(count($stokMenipis)) ?></div>
+                <div class="stat-label">Stok menipis</div>
+                <div class="stat-value"><?= e(count($stokMenipis)) ?></div>
             </div>
         </div>
     </div>
@@ -73,14 +73,20 @@ require __DIR__ . '/partials/header.php';
 
 <div class="row g-3">
     <div class="col-lg-7">
-        <div class="card">
-            <div class="card-header bg-white fw-semibold">
-                <i class="bi bi-clock-history"></i> Transaksi Terbaru
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center gap-2">
+                <span><i class="bi bi-clock-history" aria-hidden="true"></i> Transaksi Terbaru</span>
+                <a href="riwayat.php" class="btn btn-sm btn-outline-secondary">Lihat semua</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead>
-                        <tr><th>No</th><th>Tanggal</th><th class="text-end">Total</th><th></th></tr>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th class="text-end">Total</th>
+                            <th></th>
+                        </tr>
                     </thead>
                     <tbody>
                     <?php if (count($terbaru) === 0): ?>
@@ -105,16 +111,17 @@ require __DIR__ . '/partials/header.php';
 
     <div class="col-lg-5">
         <div class="card mb-3">
-            <div class="card-header bg-white fw-semibold">
-                <i class="bi bi-trophy"></i> Produk Terlaris
+            <div class="card-header">
+                <i class="bi bi-trophy" aria-hidden="true"></i> Produk Terlaris
             </div>
-            <ul class="list-group list-group-flush">
+            <ul class="rank-list">
                 <?php if (count($terlaris) === 0): ?>
-                    <li class="list-group-item text-muted">Belum ada penjualan.</li>
+                    <li class="empty-state">Belum ada penjualan.</li>
                 <?php endif; ?>
                 <?php foreach ($terlaris as $i => $t): ?>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span><?= e($i + 1) ?>. <?= e($t['nama_produk']) ?></span>
+                    <li class="rank-item">
+                        <span class="rank-number"><?= e($i + 1) ?></span>
+                        <span class="rank-name"><?= e($t['nama_produk']) ?></span>
                         <span class="badge text-bg-primary"><?= e($t['terjual']) ?> terjual</span>
                     </li>
                 <?php endforeach; ?>
@@ -122,16 +129,20 @@ require __DIR__ . '/partials/header.php';
         </div>
 
         <div class="card">
-            <div class="card-header bg-white fw-semibold">
-                <i class="bi bi-exclamation-triangle text-warning"></i> Stok Menipis (≤ 10)
+            <div class="card-header d-flex justify-content-between align-items-center gap-2">
+                <span>
+                    <i class="bi bi-exclamation-triangle text-warning" aria-hidden="true"></i>
+                    Stok Menipis (&le; 10)
+                </span>
+                <a href="produk.php" class="btn btn-sm btn-outline-secondary">Kelola stok</a>
             </div>
-            <ul class="list-group list-group-flush">
+            <ul class="rank-list">
                 <?php if (count($stokMenipis) === 0): ?>
-                    <li class="list-group-item text-muted">Semua stok aman 👍</li>
+                    <li class="empty-state">Semua stok aman.</li>
                 <?php endif; ?>
                 <?php foreach ($stokMenipis as $s): ?>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span><?= e($s['nama_produk']) ?></span>
+                    <li class="rank-item">
+                        <span class="rank-name"><?= e($s['nama_produk']) ?></span>
                         <span class="badge text-bg-danger">sisa <?= e($s['stok']) ?></span>
                     </li>
                 <?php endforeach; ?>

@@ -34,6 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: kasir.php');
             exit;
         }
+    } elseif ($aksi === 'kurangi') {
+        $idProduk = (int) ($_POST['id_produk'] ?? 0);
+        $qty = (int) ($_POST['qty'] ?? 1);
+
+        if ($qty < 1) {
+            $error = 'Qty minimal 1.';
+        } else {
+            $keranjang->kurangi($idProduk, $qty);
+            header('Location: kasir.php');
+            exit;
+        }
     } elseif ($aksi === 'hapus') {
         $keranjang->hapus((int) ($_POST['id_produk'] ?? 0));
         header('Location: kasir.php');
@@ -72,6 +83,7 @@ foreach ($keranjang->semua() as $idProduk => $qty) {
         'nama'      => $p['nama_produk'],
         'harga'     => $harga,
         'qty'       => $qty,
+        'stok'      => (int) $p['stok'],
         'subtotal'  => $harga * $qty,
     ];
     $itemsHitung[] = ['harga' => $harga, 'qty' => $qty];
@@ -79,117 +91,192 @@ foreach ($keranjang->semua() as $idProduk => $qty) {
 
 $hasil = $kalkulator->hitung($itemsHitung);
 $daftarProduk = $produk->semua();
+$jumlahItem = array_sum(array_column($baris, 'qty'));
 
 $judul = 'Kasir';
 require __DIR__ . '/partials/header.php';
 ?>
 
-<h4 class="mb-3">Kasir</h4>
-
 <?php if ($error !== ''): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
+    <div class="alert alert-danger" role="alert"><?= e($error) ?></div>
 <?php endif; ?>
 
-<div class="row">
-    <div class="col-lg-4 mb-3">
-        <div class="card card-body">
-            <h6>Tambah ke Keranjang</h6>
-            <form method="post">
-                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
-                <input type="hidden" name="aksi" value="tambah">
-                <div class="mb-3">
-                    <label class="form-label">Produk</label>
-                    <select name="id_produk" class="form-select">
-                        <option value="">-- Pilih produk --</option>
-                        <?php foreach ($daftarProduk as $p): ?>
-                            <?php if ((int) $p['stok'] > 0): ?>
-                                <option value="<?= e($p['id_produk']) ?>">
-                                    <?= e($p['nama_produk']) ?> - <?= e(rupiah($p['harga'])) ?> (stok <?= e($p['stok']) ?>)
-                                </option>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Qty</label>
-                    <input type="number" name="qty" value="1" min="1" class="form-control">
-                </div>
-                <button class="btn btn-primary w-100">+ Tambah</button>
-            </form>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Pilih Produk</h2>
+                <p class="text-muted small mb-0">Klik tombol + untuk menambah ke keranjang.</p>
+            </div>
+            <span class="badge text-bg-light border"><?= e(count($daftarProduk)) ?> produk</span>
         </div>
+
+        <div class="search-pill w-100 mb-3">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <label class="visually-hidden" for="cariProduk">Cari produk</label>
+            <input id="cariProduk" type="search" placeholder="Cari nama produk..." autocomplete="off">
+        </div>
+
+        <div class="product-grid" id="gridProduk">
+            <?php foreach ($daftarProduk as $p): ?>
+                <?php
+                $stok = (int) $p['stok'];
+                $habis = $stok <= 0;
+                $ikon = ikonProduk((string) $p['nama_produk']);
+                ?>
+                <form method="post"
+                      class="product-card <?= $habis ? 'is-out' : '' ?>"
+                      data-nama="<?= e(mb_strtolower((string) $p['nama_produk'])) ?>">
+                    <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                    <input type="hidden" name="aksi" value="tambah">
+                    <input type="hidden" name="id_produk" value="<?= e($p['id_produk']) ?>">
+                    <input type="hidden" name="qty" value="1">
+
+                    <div class="product-thumb"
+                         style="--thumb-bg: <?= e($ikon['warna']) ?>"
+                         aria-hidden="true">
+                        <i class="bi <?= e($ikon['ikon']) ?>"></i>
+                    </div>
+
+                    <div>
+                        <div class="product-name"><?= e($p['nama_produk']) ?></div>
+                        <div class="product-meta">
+                            <?php if ($stok <= 10): ?>
+                                <span class="badge text-bg-danger">
+                                    <?= $stok === 0 ? 'Stok habis' : 'Stok ' . e($stok) ?>
+                                </span>
+                            <?php else: ?>
+                                Stok <?= e($stok) ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="product-foot">
+                        <span class="product-price"><?= e(rupiah($p['harga'])) ?></span>
+                        <button type="submit"
+                                class="btn-add"
+                                <?= $habis ? 'disabled' : '' ?>
+                                aria-label="Tambah <?= e($p['nama_produk']) ?> ke keranjang">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </form>
+            <?php endforeach; ?>
+        </div>
+
+        <p class="text-muted text-center py-4 mb-0" id="produkKosong" hidden>
+            Produk tidak ditemukan.
+        </p>
     </div>
 
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Produk</th>
-                            <th class="text-end">Harga</th>
-                            <th class="text-center">Qty</th>
-                            <th class="text-end">Subtotal</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (count($baris) === 0): ?>
-                        <tr><td colspan="5" class="text-center">Keranjang masih kosong.</td></tr>
-                    <?php endif; ?>
-                    <?php foreach ($baris as $b): ?>
-                        <tr>
-                            <td><?= e($b['nama']) ?></td>
-                            <td class="text-end"><?= e(rupiah($b['harga'])) ?></td>
-                            <td class="text-center"><?= e($b['qty']) ?></td>
-                            <td class="text-end"><?= e(rupiah($b['subtotal'])) ?></td>
-                            <td class="text-end">
+    <div class="col-lg-4">
+        <aside class="cart-panel" aria-label="Detail keranjang">
+            <div class="cart-head">
+                <div>
+                    <h2 class="cart-title">Detail Keranjang</h2>
+                    <div class="cart-subtitle"><?= e($jumlahItem) ?> item terpilih</div>
+                </div>
+                <?php if (count($baris) > 0): ?>
+                    <form method="post" onsubmit="return confirm('Kosongkan keranjang?')">
+                        <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                        <input type="hidden" name="aksi" value="kosongkan">
+                        <button type="submit" class="cart-clear">Hapus Semua</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+
+            <div class="cart-items">
+                <?php if (count($baris) === 0): ?>
+                    <div class="cart-empty">
+                        Keranjang masih kosong.<br>
+                        Pilih produk di sebelah kiri.
+                    </div>
+                <?php endif; ?>
+
+                <?php foreach ($baris as $b): ?>
+                    <div class="cart-item">
+                        <div>
+                            <div class="cart-item-name"><?= e($b['nama']) ?></div>
+                            <div class="cart-item-price"><?= e(rupiah($b['harga'])) ?> / item</div>
+                            <div class="cart-item-tools">
+                                <div class="qty-control">
+                                    <form method="post">
+                                        <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                                        <input type="hidden" name="aksi" value="kurangi">
+                                        <input type="hidden" name="id_produk" value="<?= e($b['id_produk']) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <button type="submit"
+                                                class="qty-btn"
+                                                aria-label="Kurangi qty <?= e($b['nama']) ?>"
+                                                title="Kurangi">
+                                            <i class="bi bi-dash-lg" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                    <span class="qty-value">x<?= e($b['qty']) ?></span>
+                                    <form method="post">
+                                        <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                                        <input type="hidden" name="aksi" value="tambah">
+                                        <input type="hidden" name="id_produk" value="<?= e($b['id_produk']) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <button type="submit"
+                                                class="qty-btn"
+                                                <?= $b['qty'] >= $b['stok'] ? 'disabled' : '' ?>
+                                                aria-label="Tambah qty <?= e($b['nama']) ?>"
+                                                title="<?= $b['qty'] >= $b['stok'] ? 'Stok maksimum' : 'Tambah' ?>">
+                                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </div>
                                 <form method="post">
                                     <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                                     <input type="hidden" name="aksi" value="hapus">
                                     <input type="hidden" name="id_produk" value="<?= e($b['id_produk']) ?>">
-                                    <button class="btn btn-sm btn-outline-danger">x</button>
+                                    <button type="submit"
+                                            class="cart-remove"
+                                            aria-label="Hapus <?= e($b['nama']) ?> dari keranjang"
+                                            title="Hapus">
+                                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end">Subtotal</td>
-                            <td class="text-end"><?= e(rupiah($hasil['subtotal'])) ?></td><td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="text-end">Diskon</td>
-                            <td class="text-end">- <?= e(rupiah($hasil['diskon'])) ?></td><td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="text-end">Pajak 10%</td>
-                            <td class="text-end"><?= e(rupiah($hasil['pajak'])) ?></td><td></td>
-                        </tr>
-                        <tr class="table-primary fw-bold">
-                            <td colspan="3" class="text-end">TOTAL</td>
-                            <td class="text-end"><?= e(rupiah($hasil['total'])) ?></td><td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            </div>
+                        </div>
+                        <div class="cart-item-total"><?= e(rupiah($b['subtotal'])) ?></div>
+                    </div>
+                <?php endforeach; ?>
             </div>
-        </div>
 
-        <?php if (count($baris) > 0): ?>
-        <div class="d-flex gap-2 mt-3">
-            <form method="post">
-                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
-                <input type="hidden" name="aksi" value="simpan">
-                <button class="btn btn-success">Simpan Transaksi</button>
-            </form>
-            <form method="post" onsubmit="return confirm('Kosongkan keranjang?')">
-                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
-                <input type="hidden" name="aksi" value="kosongkan">
-                <button class="btn btn-outline-secondary">Kosongkan</button>
-            </form>
-        </div>
-        <?php endif; ?>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span><?= e(rupiah($hasil['subtotal'])) ?></span>
+                </div>
+                <div class="summary-row">
+                    <span>Diskon</span>
+                    <span>- <?= e(rupiah($hasil['diskon'])) ?></span>
+                </div>
+                <div class="summary-row">
+                    <span>Pajak 10%</span>
+                    <span><?= e(rupiah($hasil['pajak'])) ?></span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Akhir</span>
+                    <span><?= e(rupiah($hasil['total'])) ?></span>
+                </div>
+
+                <form method="post" class="mt-3">
+                    <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                    <input type="hidden" name="aksi" value="simpan">
+                    <button type="submit"
+                            class="btn btn-primary btn-block"
+                            <?= count($baris) === 0 ? 'disabled' : '' ?>>
+                        Simpan Transaksi
+                    </button>
+                </form>
+            </div>
+        </aside>
     </div>
 </div>
+
+<script src="assets/js/kasir.js"></script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

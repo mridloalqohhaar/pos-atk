@@ -1,7 +1,9 @@
 <?php
 
 require __DIR__ . '/../bootstrap.php';
+
 use App\Produk;
+
 wajibLogin($auth);
 
 $produk = new Produk($db);
@@ -42,35 +44,59 @@ $judul = $id > 0 ? 'Edit Produk' : 'Tambah Produk';
 require __DIR__ . '/partials/header.php';
 ?>
 
-<h4 class="mb-3"><?= e($judul) ?></h4>
+<div class="page-head">
+    <div>
+        <h2 class="page-title"><?= e($judul) ?></h2>
+        <p class="page-subtitle">
+            <?= $id > 0 ? 'Perbarui informasi produk yang sudah ada.' : 'Lengkapi informasi produk baru.' ?>
+        </p>
+    </div>
+    <a href="produk.php" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali
+    </a>
+</div>
 
-<div class="card card-body">
-    <form method="post"> <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
-        <div class="mb-3">
-            <label class="form-label">Nama Produk</label>
-            <input type="text" name="nama_produk" value="<?= e($data['nama_produk']) ?>"
-                   class="form-control <?= isset($errors['nama_produk']) ? 'is-invalid' : '' ?>">
-            <div class="invalid-feedback"><?= e($errors['nama_produk'] ?? '') ?></div>
-        </div>
+<div class="row">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card">
+            <div class="card-header">Informasi Produk</div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Harga (Rp)</label>
-                <input type="number" name="harga" value="<?= e($data['harga']) ?>"
-                       class="form-control <?= isset($errors['harga']) ? 'is-invalid' : '' ?>">
-                <div class="invalid-feedback"><?= e($errors['harga'] ?? '') ?></div>
+                    <div class="mb-3">
+                        <label class="form-label" for="nama_produk">Nama Produk</label>
+                        <input type="text" id="nama_produk" name="nama_produk"
+                               value="<?= e($data['nama_produk']) ?>"
+                               class="form-control <?= isset($errors['nama_produk']) ? 'is-invalid' : '' ?>">
+                        <div class="invalid-feedback"><?= e($errors['nama_produk'] ?? '') ?></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="harga">Harga (Rp)</label>
+                            <input type="number" id="harga" name="harga" value="<?= e($data['harga']) ?>"
+                                   class="form-control <?= isset($errors['harga']) ? 'is-invalid' : '' ?>">
+                            <div class="invalid-feedback"><?= e($errors['harga'] ?? '') ?></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="stok">Stok</label>
+                            <input type="number" id="stok" name="stok" value="<?= e($data['stok']) ?>"
+                                   class="form-control <?= isset($errors['stok']) ? 'is-invalid' : '' ?>">
+                            <div class="invalid-feedback"><?= e($errors['stok'] ?? '') ?></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-check2" aria-hidden="true"></i> Simpan
+                        </button>
+                        <a href="produk.php" class="btn btn-outline-secondary">Batal</a>
+                    </div>
+                </form>
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Stok</label>
-                <input type="number" name="stok" value="<?= e($data['stok']) ?>"
-                       class="form-control <?= isset($errors['stok']) ? 'is-invalid' : '' ?>">
-                <div class="invalid-feedback"><?= e($errors['stok'] ?? '') ?></div>
-            </div>
         </div>
-
-        <button class="btn btn-primary">Simpan</button>
-        <a href="produk.php" class="btn btn-secondary">Batal</a>
-    </form>
+    </div>
 </div>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

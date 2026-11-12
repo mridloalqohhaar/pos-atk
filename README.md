@@ -8,7 +8,7 @@ PHP native berbasis OOP. Dikerjakan sebagai project UKK.
 - Login dan logout (password di-hash), semua halaman dilindungi
 - Dashboard: transaksi dan omzet hari ini, total produk, stok menipis, produk terlaris
 - CRUD produk dengan validasi dan pencarian
-- Kasir: keranjang, subtotal, diskon bertingkat, pajak 10%, cek stok
+- Kasir: keranjang dengan kontrol qty (+/-), subtotal, diskon bertingkat, pajak 10%, cek stok
 - Simpan transaksi (database transaction) dan kurangi stok otomatis
 - Riwayat transaksi, filter tanggal, total omzet, detail, dan cetak struk
 - Proteksi CSRF pada semua form

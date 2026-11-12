@@ -40,6 +40,71 @@ class KeranjangTest extends TestCase
         $keranjang->tambah(1, 0);
     }
 
+    public function testKurangiMengurangiQty(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 5);
+
+        $keranjang->kurangi(1, 2);
+
+        $this->assertSame(3, $keranjang->qty(1));
+    }
+
+    public function testKurangiDefaultSatu(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->kurangi(1);
+
+        $this->assertSame(1, $keranjang->qty(1));
+    }
+
+    public function testKurangiSampaiHabisMenghapusProduk(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->kurangi(1, 2);
+
+        $this->assertSame(0, $keranjang->qty(1));
+        $this->assertSame([], $keranjang->semua());
+    }
+
+    public function testKurangiMelebihiQtyMenghapusProduk(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->kurangi(1, 5);
+
+        $this->assertTrue($keranjang->kosong());
+    }
+
+    public function testKurangiProdukYangTidakAdaTidakError(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+
+        $keranjang->kurangi(99, 1);
+
+        $this->assertTrue($keranjang->kosong());
+    }
+
+    public function testKurangiQtyNolDitolak(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $this->expectException(InvalidArgumentException::class);
+        $keranjang->kurangi(1, 0);
+    }
+
     public function testHapusDanKosongkan(): void
     {
         $penyimpanan = [];

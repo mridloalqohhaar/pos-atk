@@ -21,6 +21,15 @@
 - Struk memakai harga_satuan dari detail_transaksi.
 
 
+## Day 5 (redesign UI)
+- Design token dan komponen terpusat di public/assets/css/app.css.
+- Layout sidebar + topbar; sidebar berubah menjadi bottom bar di mobile.
+- Kasir: grid produk, pencarian client-side, panel keranjang, stepper qty.
+- Login, dashboard, produk, riwayat, dan detail memakai komponen yang sama.
+- Aksesibilitas: skip link, aria-label, role alert/status, focus-visible, rel noopener.
+- struk.php tidak diubah karena sudah memiliki CSS print sendiri.
+
+
 
 ## Log bug
 | Tanggal | Bug | Penyebab | Perbaikan |
