@@ -106,4 +106,20 @@ class Keranjang
     {
         return count($this->data) === 0;
     }
+        /**
+     * Mengubah qty sebuah produk langsung ke jumlah tertentu.
+     * Jika qty kurang dari 1, produk dihapus dari keranjang.
+     *
+     * @param int $idProduk ID produk
+     * @param int $qty      Jumlah baru
+     */
+    public function ubah(int $idProduk, int $qty): void
+    {
+        if ($qty < 1) {
+            $this->hapus($idProduk);
+            return;
+        }
+
+        $this->data[$idProduk] = $qty;
+    }
 }

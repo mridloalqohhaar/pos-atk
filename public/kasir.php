@@ -1,10 +1,12 @@
 <?php
 
 require __DIR__ . '/../bootstrap.php';
+
 use App\KalkulatorTransaksi;
 use App\Keranjang;
 use App\Produk;
 use App\Transaksi;
+
 wajibLogin($auth);
 
 $_SESSION['keranjang'] ??= [];
@@ -42,6 +44,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Qty minimal 1.';
         } else {
             $keranjang->kurangi($idProduk, $qty);
+            header('Location: kasir.php');
+            exit;
+        }
+    } elseif ($aksi === 'ubah') {
+        $idProduk = (int) ($_POST['id_produk'] ?? 0);
+        $qty = (int) ($_POST['qty'] ?? 0);
+        $dipilih = $produk->cari($idProduk);
+
+        if ($dipilih === null) {
+            $error = 'Produk tidak ditemukan.';
+        } elseif ($qty > (int) $dipilih['stok']) {
+            $error = 'Stok "' . $dipilih['nama_produk'] . '" tidak cukup (sisa ' . $dipilih['stok'] . ').';
+        } else {
+            $keranjang->ubah($idProduk, $qty);
             header('Location: kasir.php');
             exit;
         }
@@ -106,7 +122,7 @@ require __DIR__ . '/partials/header.php';
         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
             <div>
                 <h2 class="h5 fw-bold mb-1">Pilih Produk</h2>
-                <p class="text-muted small mb-0">Klik tombol + untuk menambah ke keranjang.</p>
+                <p class="text-muted small mb-0">Isi jumlah, lalu klik tombol + untuk menambah ke keranjang.</p>
             </div>
             <span class="badge text-bg-light border"><?= e(count($daftarProduk)) ?> produk</span>
         </div>
@@ -130,7 +146,6 @@ require __DIR__ . '/partials/header.php';
                     <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                     <input type="hidden" name="aksi" value="tambah">
                     <input type="hidden" name="id_produk" value="<?= e($p['id_produk']) ?>">
-                    <input type="hidden" name="qty" value="1">
 
                     <div class="product-thumb"
                          style="--thumb-bg: <?= e($ikon['warna']) ?>"
@@ -153,12 +168,19 @@ require __DIR__ . '/partials/header.php';
 
                     <div class="product-foot">
                         <span class="product-price"><?= e(rupiah($p['harga'])) ?></span>
-                        <button type="submit"
-                                class="btn-add"
-                                <?= $habis ? 'disabled' : '' ?>
-                                aria-label="Tambah <?= e($p['nama_produk']) ?> ke keranjang">
-                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                        </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="number" name="qty" value="1" min="1" max="<?= e($stok) ?>"
+                                   class="form-control form-control-sm text-center"
+                                   style="width:54px"
+                                   aria-label="Jumlah <?= e($p['nama_produk']) ?>"
+                                   <?= $habis ? 'disabled' : '' ?>>
+                            <button type="submit"
+                                    class="btn-add"
+                                    <?= $habis ? 'disabled' : '' ?>
+                                    aria-label="Tambah <?= e($p['nama_produk']) ?> ke keranjang">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
                 </form>
             <?php endforeach; ?>
@@ -212,7 +234,20 @@ require __DIR__ . '/partials/header.php';
                                             <i class="bi bi-dash-lg" aria-hidden="true"></i>
                                         </button>
                                     </form>
-                                    <span class="qty-value">x<?= e($b['qty']) ?></span>
+
+                                    <form method="post">
+                                        <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                                        <input type="hidden" name="aksi" value="ubah">
+                                        <input type="hidden" name="id_produk" value="<?= e($b['id_produk']) ?>">
+                                        <input type="number" name="qty" value="<?= e($b['qty']) ?>"
+                                               min="0" max="<?= e($b['stok']) ?>"
+                                               class="form-control form-control-sm text-center border-0 bg-transparent p-0 fw-semibold"
+                                               style="width:46px"
+                                               aria-label="Jumlah <?= e($b['nama']) ?>"
+                                               title="Ketik jumlah, 0 untuk menghapus"
+                                               onchange="this.form.submit()">
+                                    </form>
+
                                     <form method="post">
                                         <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
                                         <input type="hidden" name="aksi" value="tambah">

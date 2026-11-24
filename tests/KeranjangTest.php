@@ -128,4 +128,36 @@ class KeranjangTest extends TestCase
 
         $this->assertSame([7 => 4], $penyimpanan);
     }
+        public function testUbahMenimpaQtyLama(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->ubah(1, 10);
+
+        $this->assertSame(10, $keranjang->qty(1));
+    }
+
+    public function testUbahKeNolMenghapusItem(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->ubah(1, 0);
+
+        $this->assertTrue($keranjang->kosong());
+    }
+
+    public function testUbahNegatifMenghapusItem(): void
+    {
+        $penyimpanan = [];
+        $keranjang = new Keranjang($penyimpanan);
+        $keranjang->tambah(1, 2);
+
+        $keranjang->ubah(1, -3);
+
+        $this->assertSame(0, $keranjang->qty(1));
+    }
 }
