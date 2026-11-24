@@ -1,3 +1,5 @@
 /vendor/
 /.venv/
 .phpunit.result.cache
+/public/img/produk/*
+!/public/img/produk/.gitkeep

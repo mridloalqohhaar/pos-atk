@@ -3,12 +3,15 @@
 require __DIR__ . '/../bootstrap.php';
 
 use App\Produk;
+use App\UnggahGambar;
 
 wajibLogin($auth);
 
 $produk = new Produk($db);
+$unggah = new UnggahGambar(__DIR__ . '/img/produk');
 $id = (int) ($_GET['id'] ?? 0);
 $data = ['nama_produk' => '', 'harga' => '', 'stok' => '0'];
+$gambarLama = null;
 $errors = [];
 
 if ($id > 0) {
@@ -18,6 +21,7 @@ if ($id > 0) {
         exit;
     }
     $data = $ditemukan;
+    $gambarLama = $ditemukan['gambar'] ?? null;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,75 +32,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     $errors = $produk->validasi($data);
 
+    $file = $_FILES['gambar'] ?? ['error' => UPLOAD_ERR_NO_FILE];
+    $pesanGambar = $unggah->validasi($file);
+    if ($pesanGambar !== null) {
+        $errors['gambar'] = $pesanGambar;
+    }
+
     if (count($errors) === 0) {
-        if ($id > 0) {
-            $produk->ubah($id, $data);
-            header('Location: produk.php?pesan=ubah');
-        } else {
-            $produk->tambah($data);
-            header('Location: produk.php?pesan=tambah');
+        try {
+            $gambarBaru = $unggah->simpan($file);
+
+            if ($id > 0) {
+                $produk->ubah($id, $data, $gambarBaru);
+
+                if ($gambarBaru !== null) {
+                    $unggah->hapus($gambarLama);
+                } elseif (isset($_POST['hapus_gambar'])) {
+                    $produk->kosongkanGambar($id);
+                    $unggah->hapus($gambarLama);
+                }
+
+                header('Location: produk.php?pesan=ubah');
+            } else {
+                $produk->tambah($data, $gambarBaru);
+                header('Location: produk.php?pesan=tambah');
+            }
+            exit;
+        } catch (RuntimeException $ex) {
+            $errors['gambar'] = $ex->getMessage();
         }
-        exit;
     }
 }
+
+$foto = urlGambar($gambarLama);
 
 $judul = $id > 0 ? 'Edit Produk' : 'Tambah Produk';
 require __DIR__ . '/partials/header.php';
 ?>
 
-<div class="page-head">
-    <div>
-        <h2 class="page-title"><?= e($judul) ?></h2>
-        <p class="page-subtitle">
-            <?= $id > 0 ? 'Perbarui informasi produk yang sudah ada.' : 'Lengkapi informasi produk baru.' ?>
-        </p>
-    </div>
-    <a href="produk.php" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali
-    </a>
-</div>
+<h4 class="mb-3"><?= e($judul) ?></h4>
 
-<div class="row">
-    <div class="col-lg-8 col-xl-6">
-        <div class="card">
-            <div class="card-header">Informasi Produk</div>
-            <div class="card-body">
-                <form method="post">
-                    <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+<div class="card card-body">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
 
-                    <div class="mb-3">
-                        <label class="form-label" for="nama_produk">Nama Produk</label>
-                        <input type="text" id="nama_produk" name="nama_produk"
-                               value="<?= e($data['nama_produk']) ?>"
-                               class="form-control <?= isset($errors['nama_produk']) ? 'is-invalid' : '' ?>">
-                        <div class="invalid-feedback"><?= e($errors['nama_produk'] ?? '') ?></div>
-                    </div>
+        <div class="mb-3">
+            <label class="form-label">Nama Produk</label>
+            <input type="text" name="nama_produk" value="<?= e($data['nama_produk']) ?>"
+                   class="form-control <?= isset($errors['nama_produk']) ? 'is-invalid' : '' ?>">
+            <div class="invalid-feedback"><?= e($errors['nama_produk'] ?? '') ?></div>
+        </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" for="harga">Harga (Rp)</label>
-                            <input type="number" id="harga" name="harga" value="<?= e($data['harga']) ?>"
-                                   class="form-control <?= isset($errors['harga']) ? 'is-invalid' : '' ?>">
-                            <div class="invalid-feedback"><?= e($errors['harga'] ?? '') ?></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" for="stok">Stok</label>
-                            <input type="number" id="stok" name="stok" value="<?= e($data['stok']) ?>"
-                                   class="form-control <?= isset($errors['stok']) ? 'is-invalid' : '' ?>">
-                            <div class="invalid-feedback"><?= e($errors['stok'] ?? '') ?></div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary">
-                            <i class="bi bi-check2" aria-hidden="true"></i> Simpan
-                        </button>
-                        <a href="produk.php" class="btn btn-outline-secondary">Batal</a>
-                    </div>
-                </form>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Harga (Rp)</label>
+                <input type="number" name="harga" value="<?= e($data['harga']) ?>"
+                       class="form-control <?= isset($errors['harga']) ? 'is-invalid' : '' ?>">
+                <div class="invalid-feedback"><?= e($errors['harga'] ?? '') ?></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Stok</label>
+                <input type="number" name="stok" value="<?= e($data['stok']) ?>"
+                       class="form-control <?= isset($errors['stok']) ? 'is-invalid' : '' ?>">
+                <div class="invalid-feedback"><?= e($errors['stok'] ?? '') ?></div>
             </div>
         </div>
-    </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="gambar">Gambar Produk (opsional)</label>
+            <div>
+                <img id="pratinjau" src="<?= e($foto ?? '') ?>" alt="Pratinjau gambar"
+                     class="rounded border mb-2"
+                     style="width:120px;height:120px;object-fit:cover"
+                     <?= $foto === null ? 'hidden' : '' ?>>
+            </div>
+            <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png,image/webp"
+                   class="form-control <?= isset($errors['gambar']) ? 'is-invalid' : '' ?>">
+            <div class="invalid-feedback"><?= e($errors['gambar'] ?? '') ?></div>
+            <div class="form-text">Format JPG, PNG, atau WEBP. Maksimal 2 MB. Foto persegi paling pas.</div>
+
+            <?php if ($id > 0 && $foto !== null): ?>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="hapus_gambar" id="hapus_gambar">
+                    <label class="form-check-label" for="hapus_gambar">
+                        Hapus gambar (kembali memakai ikon)
+                    </label>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <button class="btn btn-primary">Simpan</button>
+        <a href="produk.php" class="btn btn-secondary">Batal</a>
+    </form>
 </div>
+
+<script>
+document.getElementById('gambar').addEventListener('change', function () {
+    var file = this.files[0];
+    var pratinjau = document.getElementById('pratinjau');
+    if (file) {
+        pratinjau.src = URL.createObjectURL(file);
+        pratinjau.hidden = false;
+    }
+});
+</script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

@@ -1292,3 +1292,12 @@ h1, h2, h3, h4, h5, h6 {
         animation-iteration-count: 1 !important;
     }
 }
+
+.product-thumb { position: relative; overflow: hidden; }
+.product-thumb .product-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

@@ -91,6 +91,24 @@ function ikonProduk(string $nama): array
 
     return ['ikon' => 'bi-box-seam', 'warna' => '#f1f5f9'];
 }
+/**
+ * Mengambil URL gambar produk jika filenya benar-benar ada.
+ *
+ * @param string|null $nama Nama file yang tersimpan di database
+ * @return string|null URL relatif, atau null jika tidak ada (pakai ikon)
+ */
+function urlGambar(?string $nama): ?string
+{
+    if ($nama === null || $nama === '') {
+        return null;
+    }
+
+    $nama = basename($nama);
+
+    return is_file(__DIR__ . '/public/img/produk/' . $nama)
+        ? 'img/produk/' . rawurlencode($nama)
+        : null;
+}
 
 /**
  * Membuat isi atribut style untuk gambar latar.

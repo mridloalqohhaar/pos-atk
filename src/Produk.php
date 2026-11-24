@@ -21,7 +21,7 @@ class Produk
         $this->pdo = $db->getConnection();
     }
 
-       /**
+    /**
      * Mengambil produk, yang terbaru di atas.
      * Jika $kata diisi, hanya produk yang namanya mengandung kata itu.
      *
@@ -56,36 +56,55 @@ class Produk
      * Menyimpan produk baru.
      *
      * @param array{nama_produk: string, harga: int|string, stok: int|string} $data
+     * @param string|null $gambar Nama file gambar (null = tanpa gambar)
      */
-    public function tambah(array $data): void
+    public function tambah(array $data, ?string $gambar = null): void
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO produk (nama_produk, harga, stok) VALUES (:nama, :harga, :stok)'
+            'INSERT INTO produk (nama_produk, harga, stok, gambar)
+             VALUES (:nama, :harga, :stok, :gambar)'
         );
         $stmt->execute([
-            'nama'  => trim($data['nama_produk']),
-            'harga' => (int) $data['harga'],
-            'stok'  => (int) $data['stok'],
+            'nama'   => trim($data['nama_produk']),
+            'harga'  => (int) $data['harga'],
+            'stok'   => (int) $data['stok'],
+            'gambar' => $gambar,
         ]);
     }
 
     /**
      * Mengubah data produk yang sudah ada.
+     * Gambar hanya diganti jika $gambar diisi.
      *
      * @param array{nama_produk: string, harga: int|string, stok: int|string} $data
+     * @param string|null $gambar Nama file gambar baru (null = gambar lama dipertahankan)
      */
-    public function ubah(int $id, array $data): void
+    public function ubah(int $id, array $data, ?string $gambar = null): void
     {
-        $stmt = $this->pdo->prepare(
-            'UPDATE produk SET nama_produk = :nama, harga = :harga, stok = :stok
-             WHERE id_produk = :id'
-        );
-        $stmt->execute([
+        $sql = 'UPDATE produk SET nama_produk = :nama, harga = :harga, stok = :stok';
+        $param = [
             'nama'  => trim($data['nama_produk']),
             'harga' => (int) $data['harga'],
             'stok'  => (int) $data['stok'],
             'id'    => $id,
-        ]);
+        ];
+
+        if ($gambar !== null) {
+            $sql .= ', gambar = :gambar';
+            $param['gambar'] = $gambar;
+        }
+
+        $stmt = $this->pdo->prepare($sql . ' WHERE id_produk = :id');
+        $stmt->execute($param);
+    }
+
+    /**
+     * Mengosongkan gambar produk (kembali memakai ikon).
+     */
+    public function kosongkanGambar(int $id): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE produk SET gambar = NULL WHERE id_produk = :id');
+        $stmt->execute(['id' => $id]);
     }
 
     /**
@@ -128,7 +147,8 @@ class Produk
 
         return $errors;
     }
-        /**
+
+    /**
      * Menghitung jumlah seluruh produk.
      */
     public function jumlah(): int

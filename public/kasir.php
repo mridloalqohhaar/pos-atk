@@ -147,10 +147,15 @@ require __DIR__ . '/partials/header.php';
                     <input type="hidden" name="aksi" value="tambah">
                     <input type="hidden" name="id_produk" value="<?= e($p['id_produk']) ?>">
 
+                    <?php $foto = urlGambar($p['gambar'] ?? null); ?>
                     <div class="product-thumb"
                          style="--thumb-bg: <?= e($ikon['warna']) ?>"
                          aria-hidden="true">
-                        <i class="bi <?= e($ikon['ikon']) ?>"></i>
+                        <?php if ($foto !== null): ?>
+                            <img src="<?= e($foto) ?>" alt="" class="product-img">
+                        <?php else: ?>
+                            <i class="bi <?= e($ikon['ikon']) ?>"></i>
+                        <?php endif; ?>
                     </div>
 
                     <div>

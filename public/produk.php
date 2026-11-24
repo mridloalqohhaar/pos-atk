@@ -3,15 +3,21 @@
 require __DIR__ . '/../bootstrap.php';
 
 use App\Produk;
+use App\UnggahGambar;
 
 wajibLogin($auth);
 
 $produk = new Produk($db);
+$unggah = new UnggahGambar(__DIR__ . '/img/produk');
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'hapus') {
+    $idHapus = (int) ($_POST['id_produk'] ?? 0);
+
     try {
-        $produk->hapus((int) ($_POST['id_produk'] ?? 0));
+        $lama = $produk->cari($idHapus)['gambar'] ?? null;
+        $produk->hapus($idHapus);
+        $unggah->hapus($lama);
         header('Location: produk.php?pesan=hapus');
         exit;
     } catch (PDOException $ex) {
@@ -33,58 +39,46 @@ $judul = 'Data Produk';
 require __DIR__ . '/partials/header.php';
 ?>
 
-<div class="page-head">
-    <div>
-        <h2 class="page-title">Data Produk</h2>
-        <p class="page-subtitle">Kelola nama, harga, dan stok produk toko.</p>
-    </div>
-    <a href="produk_form.php" class="btn btn-primary">
-        <i class="bi bi-plus-lg" aria-hidden="true"></i> Tambah Produk
-    </a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-box-seam"></i> Data Produk</h4>
+    <a href="produk_form.php" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tambah Produk</a>
 </div>
 
-<?php if ($pesan !== ''): ?>
-    <div class="alert alert-success" role="status"><?= e($pesan) ?></div>
-<?php endif; ?>
-<?php if ($error !== ''): ?>
-    <div class="alert alert-danger" role="alert"><?= e($error) ?></div>
-<?php endif; ?>
-
-<form method="get" class="card card-body mb-3">
-    <div class="row g-2 align-items-center">
-        <div class="col-sm-8 col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-                <label class="visually-hidden" for="cariProduk">Cari nama produk</label>
-                <input type="text" id="cariProduk" name="q" value="<?= e($kata) ?>" class="form-control"
-                       placeholder="Cari nama produk...">
-            </div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-sm-8 col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" value="<?= e($kata) ?>" class="form-control"
+                   placeholder="Cari nama produk...">
         </div>
-        <div class="col-auto">
-            <button class="btn btn-primary">Cari</button>
-            <?php if ($kata !== ''): ?>
-                <a href="produk.php" class="btn btn-outline-secondary">Reset</a>
-            <?php endif; ?>
-        </div>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary">Cari</button>
+        <?php if ($kata !== ''): ?>
+            <a href="produk.php" class="btn btn-outline-secondary">Reset</a>
+        <?php endif; ?>
     </div>
 </form>
 
+<?php if ($pesan !== ''): ?>
+    <div class="alert alert-success"><?= e($pesan) ?></div>
+<?php endif; ?>
+<?php if ($error !== ''): ?>
+    <div class="alert alert-danger"><?= e($error) ?></div>
+<?php endif; ?>
+
 <?php if ($kata !== ''): ?>
-    <p class="text-muted small">
+    <p class="text-muted">
         Hasil pencarian "<?= e($kata) ?>": <?= e(count($daftarProduk)) ?> produk ditemukan.
     </p>
 <?php endif; ?>
 
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center gap-2">
-        <span>Daftar Produk</span>
-        <span class="text-muted small"><?= e(count($daftarProduk)) ?> produk</span>
-    </div>
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead>
+        <table class="table table-striped align-middle mb-0">
+            <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
+                    <th>Gambar</th>
                     <th>Nama Produk</th>
                     <th class="text-end">Harga</th>
                     <th class="text-center">Stok</th>
@@ -96,19 +90,24 @@ require __DIR__ . '/partials/header.php';
                 <tr><td colspan="5" class="text-center text-muted">Produk tidak ditemukan.</td></tr>
             <?php endif; ?>
             <?php foreach ($daftarProduk as $p): ?>
-                <?php $ikon = ikonProduk((string) $p['nama_produk']); ?>
+                <?php
+                $foto = urlGambar($p['gambar'] ?? null);
+                $ikon = ikonProduk((string) $p['nama_produk']);
+                ?>
                 <tr>
-                    <td><?= e($p['id_produk']) ?></td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="product-thumb-sm"
-                                  style="--thumb-bg: <?= e($ikon['warna']) ?>"
-                                  aria-hidden="true">
+                    <td style="width:72px">
+                        <?php if ($foto !== null): ?>
+                            <img src="<?= e($foto) ?>" alt="Foto <?= e($p['nama_produk']) ?>"
+                                 class="rounded"
+                                 style="width:48px;height:48px;object-fit:cover">
+                        <?php else: ?>
+                            <span class="d-inline-flex align-items-center justify-content-center rounded"
+                                  style="width:48px;height:48px;background:<?= e($ikon['warna']) ?>">
                                 <i class="bi <?= e($ikon['ikon']) ?>"></i>
                             </span>
-                            <span><?= e($p['nama_produk']) ?></span>
-                        </div>
+                        <?php endif; ?>
                     </td>
+                    <td><?= e($p['nama_produk']) ?></td>
                     <td class="text-end"><?= e(rupiah($p['harga'])) ?></td>
                     <td class="text-center">
                         <?php if ((int) $p['stok'] <= 10): ?>
@@ -118,20 +117,15 @@ require __DIR__ . '/partials/header.php';
                         <?php endif; ?>
                     </td>
                     <td class="text-center">
-                        <div class="d-inline-flex gap-1">
-                            <a href="produk_form.php?id=<?= e($p['id_produk']) ?>"
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil" aria-hidden="true"></i> Edit
-                            </a>
-                            <form method="post" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
-                                <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
-                                <input type="hidden" name="aksi" value="hapus">
-                                <input type="hidden" name="id_produk" value="<?= e($p['id_produk']) ?>">
-                                <button class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash3" aria-hidden="true"></i> Hapus
-                                </button>
-                            </form>
-                        </div>
+                        <a href="produk_form.php?id=<?= e($p['id_produk']) ?>"
+                           class="btn btn-sm btn-warning">Edit</a>
+                        <form method="post" class="d-inline"
+                              onsubmit="return confirm('Hapus produk ini?')">
+                            <input type="hidden" name="_token" value="<?= e($csrf->token()) ?>">
+                            <input type="hidden" name="aksi" value="hapus">
+                            <input type="hidden" name="id_produk" value="<?= e($p['id_produk']) ?>">
+                            <button class="btn btn-sm btn-danger">Hapus</button>
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
